@@ -40,7 +40,7 @@ public class UrlController {
         if (dto.isPresent()) {
             return dto.get();
         }
-        return urlService.saveUrl(url);
+        return urlService.shortenUrl(url);
     }
 
     @PutMapping("/shorten/{shortCode}")
