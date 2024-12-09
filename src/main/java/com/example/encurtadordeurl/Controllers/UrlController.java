@@ -5,6 +5,8 @@ import com.example.encurtadordeurl.Services.UrlService;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 public class UrlController {
 
@@ -34,6 +36,10 @@ public class UrlController {
 
     @PostMapping("/shorten")
     public UrlDTO createUrl(@RequestBody String url) {
+        Optional<UrlDTO> dto = Optional.ofNullable(urlService.getUrlByUrl(url));
+        if (dto.isPresent()) {
+            return dto.get();
+        }
         return urlService.saveUrl(url);
     }
 
