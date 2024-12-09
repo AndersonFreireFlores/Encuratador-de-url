@@ -25,6 +25,13 @@ public class Url {
     public Url() {
     }
 
+    public Url(@NonNull String url, @NonNull String shortCode, @NonNull Date createdAt, int accessCount) {
+        this.url = url;
+        this.shortCode = shortCode;
+        this.createdAt = createdAt;
+        this.accessCount = accessCount;
+    }
+
     public Url(long id, String url, String shortCode, Date createdAt, int accessCount) {
         this.id = id;
         this.url = url;

@@ -66,10 +66,10 @@ public class UrlService {
         return urlMapper.convert(url1);
     }
 
-    public String saveUrl(UrlDTO urlDTO) {
-        Url url = urlMapper.convert(urlDTO);
+    public UrlDTO saveUrl(String longUrl) {
+        Url url = new Url(longUrl, shortenUrl(longUrl), new Date(), 0);
         url = urlRepository.save(url);
-        return url.getShortCode();
+        return urlMapper.convert(url);
     }
 
     public void deleteUrl(String shortCode) {
