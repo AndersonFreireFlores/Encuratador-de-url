@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.*;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -18,7 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UrlControllerTest {
 
@@ -31,6 +33,9 @@ class UrlControllerTest {
 
     @Autowired
     private UrlService urlService;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry registry) {
@@ -65,11 +70,29 @@ class UrlControllerTest {
 
     @Test
     void getAccessCount() {
+        UrlDTO dto = urlService.shortenUrl("www.google.com");
+        int accessCount = urlController.getAccessCount(dto.getShortCode());
+        assertEquals(1, accessCount);
     }
 
     @Test
     void createUrl() {
+        String url = "www.google.com";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(url, headers);
+
+        ResponseEntity<UrlDTO> response = restTemplate.exchange(
+                "/shorten", HttpMethod.POST, request, UrlDTO.class);
+
+        UrlDTO dto = urlService.getUrlByUrl(url);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertEquals(url, response.getBody().getUrl());
+        assertEquals("www.google.com", dto.getUrl());
     }
+
 
     @Test
     void updateUrl() {

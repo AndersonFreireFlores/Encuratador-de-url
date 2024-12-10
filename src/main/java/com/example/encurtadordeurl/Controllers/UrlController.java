@@ -36,8 +36,8 @@ public class UrlController {
 
     @PostMapping("/shorten")
     public UrlDTO createUrl(@RequestBody String url) {
-        Optional<UrlDTO> dto = Optional.ofNullable(urlService.getUrlByUrl(url));
-        if (dto.isPresent()) {
+        if (urlService.urlExists(url)) {
+            Optional<UrlDTO> dto = Optional.ofNullable(urlService.getUrlByUrl(url));
             return dto.get();
         }
         return urlService.shortenUrl(url);
