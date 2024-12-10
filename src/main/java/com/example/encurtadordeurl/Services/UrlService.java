@@ -31,23 +31,24 @@ public UrlDTO shortenUrl(String originalUrl) {
     url.setCreatedAt(new Date());
     url.setAccessCount(0);
 
-    url = urlRepository.save(url); // Save first to get the ID
-    String shortCode = encode(url.getId());
-    url.setShortCode(shortCode);
-    urlRepository.save(url); // Save again with the short code
+   url = urlRepository.save(url); // Save first to get the ID
+String shortCode = encode(url.getUrl());
+url.setShortCode(shortCode);
+urlRepository.save(url); // Save again with the short code
 
-    return urlMapper.convert(url);
+return urlMapper.convert(url);
 }
 
-    private String encode(long id) {
-        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder shortCode = new StringBuilder();
-        while (id > 0) {
-            shortCode.append(characters.charAt((int) (id % 62)));
-            id /= 62;
-        }
-        return shortCode.reverse().toString();
+private String encode(String url) {
+    String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    StringBuilder shortCode = new StringBuilder();
+    int hashCode = url.hashCode();
+    while (hashCode > 0) {
+        shortCode.append(characters.charAt(hashCode % 62));
+        hashCode /= 62;
     }
+    return shortCode.reverse().toString();
+}
 
 
     public UrlDTO getUrlByShortCode(String shortCode) {
@@ -64,6 +65,10 @@ public UrlDTO shortenUrl(String originalUrl) {
         Url url1 = urlRepository.findByUrl(url).orElseThrow(
                 () -> new IllegalArgumentException("URL not found"));
         return urlMapper.convert(url1);
+    }
+
+    public boolean urlExists(String url) {
+        return urlRepository.findByUrl(url).isPresent();
     }
 
 
