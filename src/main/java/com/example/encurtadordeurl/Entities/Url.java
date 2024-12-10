@@ -6,11 +6,14 @@ import org.springframework.lang.NonNull;
 import java.util.Date;
 
 @Entity
-@Table(name = "tb_urls")
+@Table(name = "tb_urls", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "url"),
+        @UniqueConstraint(columnNames = "shortCode")
+})
 public class Url {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @NonNull

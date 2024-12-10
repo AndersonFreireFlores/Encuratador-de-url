@@ -20,19 +20,24 @@ public class UrlService {
         this.urlMapper = urlMapper;
     }
 
-    public UrlDTO shortenUrl(String originalUrl) {
-
-        Url url = new Url();
-        url.setUrl(originalUrl);
-        url.setCreatedAt(new Date());
-        url.setAccessCount(0);
-
-        String shortCode = encode(url.getId());
-        url.setShortCode(shortCode);
-        urlRepository.save(url);
-
-        return urlMapper.convert(url);
+public UrlDTO shortenUrl(String originalUrl) {
+    Optional<Url> existingUrl = urlRepository.findByUrl(originalUrl);
+    if (existingUrl.isPresent()) {
+        return urlMapper.convert(existingUrl.get());
     }
+
+    Url url = new Url();
+    url.setUrl(originalUrl);
+    url.setCreatedAt(new Date());
+    url.setAccessCount(0);
+
+    url = urlRepository.save(url); // Save first to get the ID
+    String shortCode = encode(url.getId());
+    url.setShortCode(shortCode);
+    urlRepository.save(url); // Save again with the short code
+
+    return urlMapper.convert(url);
+}
 
     private String encode(long id) {
         String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
