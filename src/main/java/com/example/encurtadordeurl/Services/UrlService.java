@@ -6,6 +6,7 @@ import com.example.encurtadordeurl.Entities.UrlMapper;
 import com.example.encurtadordeurl.Repositories.UrlRepository;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Optional;
 
@@ -20,35 +21,34 @@ public class UrlService {
         this.urlMapper = urlMapper;
     }
 
-public UrlDTO shortenUrl(String originalUrl) {
-    Optional<Url> existingUrl = urlRepository.findByUrl(originalUrl);
-    if (existingUrl.isPresent()) {
-        return urlMapper.convert(existingUrl.get());
+    public UrlDTO shortenUrl(String originalUrl) {
+        Optional<Url> existingUrl = urlRepository.findByUrl(originalUrl);
+        if (existingUrl.isPresent()) {
+            return urlMapper.convert(existingUrl.get());
+        }
+
+        Url url = new Url();
+        url.setUrl(originalUrl);
+        url.setCreatedAt(new Date());
+        url.setAccessCount(0);
+
+
+        String shortCode = encode(originalUrl);
+        url.setShortCode(shortCode);
+        urlRepository.save(url);
+
+        return urlMapper.convert(url);
     }
 
-    Url url = new Url();
-    url.setUrl(originalUrl);
-    url.setCreatedAt(new Date());
-    url.setAccessCount(0);
-
-   url = urlRepository.save(url); // Save first to get the ID
-String shortCode = encode(url.getUrl());
-url.setShortCode(shortCode);
-urlRepository.save(url); // Save again with the short code
-
-return urlMapper.convert(url);
-}
-
-private String encode(String url) {
-    String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    StringBuilder shortCode = new StringBuilder();
-    int hashCode = url.hashCode();
-    while (hashCode > 0) {
-        shortCode.append(characters.charAt(hashCode % 62));
-        hashCode /= 62;
+    private String encode(String url) {
+        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder shortCode = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
+            shortCode.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return shortCode.toString();
     }
-    return shortCode.reverse().toString();
-}
 
 
     public UrlDTO getUrlByShortCode(String shortCode) {
@@ -78,12 +78,13 @@ private String encode(String url) {
         urlRepository.delete(url);
     }
 
-    public void updateUrl(String shortCode, UrlDTO urlDTO) {
+    public UrlDTO updateUrl(String shortCode, UrlDTO urlDTO) {
         Url url = urlRepository.findByShortCode(shortCode).orElseThrow(
                 () -> new IllegalArgumentException("URL not found"));
         Url updatedUrl = urlMapper.convert(urlDTO);
         updatedUrl.setId(url.getId());
         urlRepository.save(updatedUrl);
+        return urlMapper.convert(updatedUrl);
     }
 
 }
