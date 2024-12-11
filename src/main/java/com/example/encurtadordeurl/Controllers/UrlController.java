@@ -44,8 +44,8 @@ public class UrlController {
     }
 
     @PutMapping("/shorten/{shortCode}")
-    public void updateUrl(@PathVariable String shortCode, @RequestBody UrlDTO url) {
-        urlService.updateUrl(shortCode, url);
+    public UrlDTO updateUrl(@PathVariable String shortCode, @RequestBody UrlDTO url) {
+        return urlService.updateUrl(shortCode, url);
     }
 
     @DeleteMapping("/shorten/{shortCode}")

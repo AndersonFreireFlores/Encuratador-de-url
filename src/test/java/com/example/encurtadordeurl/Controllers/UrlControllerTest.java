@@ -1,7 +1,6 @@
 package com.example.encurtadordeurl.Controllers;
 
 import com.example.encurtadordeurl.Entities.UrlDTO;
-import com.example.encurtadordeurl.Repositories.UrlRepository;
 import com.example.encurtadordeurl.Services.UrlService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,9 +95,27 @@ class UrlControllerTest {
 
     @Test
     void updateUrl() {
+        UrlDTO dto = urlService.shortenUrl("www.google.com");
+        String shortCode = dto.getShortCode();
+
+        UrlDTO updatedDto = new UrlDTO();
+        updatedDto.setUrl("www.updated.com");
+        updatedDto.setShortCode(shortCode);
+        updatedDto.setCreatedAt(dto.getCreatedAt());
+        updatedDto.setAccessCount(0);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UrlDTO> request = new HttpEntity<>(updatedDto, headers);
+
+        ResponseEntity<UrlDTO> response = restTemplate.exchange(
+                "/shorten/" + shortCode, HttpMethod.PUT, request, UrlDTO.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        UrlDTO updatedUrl = urlService.getUrlByShortCode(shortCode);
+        assertNotNull(updatedUrl);
+        assertEquals("www.updated.com", updatedUrl.getUrl());
     }
 
-    @Test
-    void deleteUrl() {
-    }
 }
