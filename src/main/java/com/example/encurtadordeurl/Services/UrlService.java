@@ -5,6 +5,7 @@ import com.example.encurtadordeurl.Entities.UrlDTO;
 import com.example.encurtadordeurl.Entities.UrlMapper;
 import com.example.encurtadordeurl.Repositories.UrlRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.Date;
@@ -21,6 +22,7 @@ public class UrlService {
         this.urlMapper = urlMapper;
     }
 
+    @Transactional
     public UrlDTO shortenUrl(String originalUrl) {
         Optional<Url> existingUrl = urlRepository.findByUrl(originalUrl);
         if (existingUrl.isPresent()) {
@@ -50,7 +52,7 @@ public class UrlService {
         return shortCode.toString();
     }
 
-
+    @Transactional
     public UrlDTO getUrlByShortCode(String shortCode) {
         Url url = urlRepository.findByShortCode(shortCode).orElseThrow(
                 () -> new IllegalArgumentException("URL not found"));
@@ -67,17 +69,19 @@ public class UrlService {
         return urlMapper.convert(url1);
     }
 
+
     public boolean urlExists(String url) {
         return urlRepository.findByUrl(url).isPresent();
     }
 
-
+    @Transactional
     public void deleteUrl(String shortCode) {
         Url url = urlRepository.findByShortCode(shortCode).orElseThrow(
                 () -> new IllegalArgumentException("URL not found"));
         urlRepository.delete(url);
     }
 
+    @Transactional
     public UrlDTO updateUrl(String shortCode, UrlDTO urlDTO) {
         Url url = urlRepository.findByShortCode(shortCode).orElseThrow(
                 () -> new IllegalArgumentException("URL not found"));
